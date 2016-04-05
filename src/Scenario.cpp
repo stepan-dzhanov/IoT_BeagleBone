@@ -21,6 +21,9 @@ Scenario::Scenario() {
           }
           char str[32];
               sprintf(str,"----Start scenario----");
+
+              Sendmail("unell@ukr.net", "djanov@gmail.com", "StepanSmartHouseNotification", "Reboot system");
+              Sendmail("natalidvoreckaya@mail.ru", "djanov@gmail.com", "От умного дома", "Я начал работать. Буду информировть тебя о событиях");
               AddEventToLog(str);
 
 }
@@ -53,13 +56,16 @@ void Scenario::WaterDelivery()	{
 		if ((hum<36)&&(w_flg ==0)){
 			w_flg=1;
 			rbuf.mtype = MESSAGE_TYPE_COMMAND;
-			sprintf((char *)rbuf.mtext, "1wdl");
+			sprintf((char *)rbuf.mtext, "1wdl20");
 			buf_length = sizeof(message_buf_t) - sizeof(long);
 			if (msgsnd(msqid, &rbuf, buf_length, 0) < 0) {
 					perror("Scenario_msgsnd");
 					exit(1);
 			}
 			std::cout<<"WDL MESSAGE is sent"<<"\n";
+
+			Sendmail("unell@ukr.net", "djanov@gmail.com", "StepanSmartHouseNotification", "Water delivery done");
+			Sendmail("natalidvoreckaya@mail.ru", "djanov@gmail.com", "От умного дома", "Я полил цветок");
 			AddEventToLog(str);
 
 		}
@@ -98,5 +104,23 @@ void Scenario::AddEventToLog(char *event )	{
 
 
 
+}
+int Scenario::Sendmail(const char *to, const char *from, const char *subject, const char *message)
+{
+    int retval = -1;
+    FILE *mailpipe = popen("/usr/lib/sendmail -t", "w");
+    if (mailpipe != NULL) {
+        fprintf(mailpipe, "To: %s\n", to);
+        fprintf(mailpipe, "From: %s\n", from);
+        fprintf(mailpipe, "Subject: %s\n\n", subject);
+        fwrite(message, 1, strlen(message), mailpipe);
+        fwrite(".\n", 1, 2, mailpipe);
+        pclose(mailpipe);
+        retval = 0;
+     }
+     else {
+         perror("Failed to invoke sendmail");
+     }
+     return retval;
 }
 

@@ -181,7 +181,7 @@ private:
 		void AddSensorToList(uint8_t _id, uint8_t _addr, uint8_t _bat);
 		bool UpdateSensorInfo(uint8_t _addr, uint8_t _bat);
 		void ClearSensorList();
-		void AddSensorToLog(char _id);
+		void AddSensorToLog(char _id, char _bat);
 
 
 

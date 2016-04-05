@@ -567,7 +567,7 @@ STM32_nFR24::STM32_nFR24(uint8_t _cepin, uint8_t _cspin)	{
 	          	 perror("nRF24_fopen");
 	           }
 
-	           AddSensorToLog('X');
+	           AddSensorToLog('X','Y');
 
 
 
@@ -595,7 +595,7 @@ bool STM32_nFR24::GetEvent (TM_NRF24L01_Event_t* event) {
 
 	    		    }
 	    	AddSensorToList(dataIn[4], dataIn[3], dataIn[5]);
-	    	AddSensorToLog(dataIn[3] );
+	    	AddSensorToLog(dataIn[3],dataIn[5]);
 	    	//PrintSensorList() ;
 
 
@@ -605,7 +605,7 @@ bool STM32_nFR24::GetEvent (TM_NRF24L01_Event_t* event) {
 	    	buf_length = sizeof(message_buf_t) - sizeof(long);
 	    	if (msgsnd(msqid, &rbuf, buf_length, 0) < 0) {
 	    	        perror("RF_module_thead");
-	    	        exit(1);
+	    	       // exit(1);
 	    	}
 		//	cout<<"sent message"<<"\n";
 			TM_NRF24L01_Transmit((uint8_t*)command);
@@ -708,7 +708,7 @@ STM32_nFR24::~STM32_nFR24() {
 	// TODO Auto-generated destructor stub
 }
 
-void STM32_nFR24::AddSensorToLog(char _id )	{
+void STM32_nFR24::AddSensorToLog(char _id, char _bat )	{
 
      char buff[64];
 	 long int s_time;
@@ -721,6 +721,10 @@ void STM32_nFR24::AddSensorToLog(char _id )	{
      write(fid, buff, strlen(buff));
      sprintf(buff,"%d",_id);
      write(fid, buff, strlen(buff));
+     sprintf(buff,"Battery-");
+     write(fid, buff, strlen(buff));
+
+     write(fid, &_bat, 1);
      sprintf(buff," Time-");
      write(fid, buff, strlen(buff));
      sprintf(buff,"%d",(char*)m_time.tm_mday);

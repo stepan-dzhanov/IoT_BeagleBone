@@ -75,6 +75,7 @@ int main(int argc, char** argv)
     message_buf_t  rbuf;
     key = QUEUES;
 
+    sleep(180);
 
 
     Scenario *scenario = new  Scenario();

@@ -275,3 +275,99 @@ FF FF FF FF FF FF
 FF FF FF FF FF FF 
 DE AD BE EF BA AD 
 F0 0D 
+
+
+Установка и настройка демона для отправки почты
+https://knek-tek.me/index.php/2015/05/28/how-to-send-email-from-the-beaglebone-black-with-a-gmail-account/
+
+
+
+
+
+w3m http://www.google.com/accounts/DisplayUnlockCaptcha
+
+on the command line in your BBB. Enter the email and password you want to use and follow the instructions. Make sure to keep the “stay logged in” box checked. After you’ve done all that, quit out of w3m by typing “q” and answering “y”, then log in to your email on a computer and check google’s message about the recent attempt to log in. Go into your account security settings and confirm that you want that device to be able to access your account. The reason you need to do this is because the BBB will be sending emails on behalf of that account.
+Open port 587 on your router and forward it to the BBB.
+Install and configure exim4 as root (exim4 is the program that will send the emails) using:
+
+1
+2
+sudo apt-get install exim4
+sudo dpkg-reconfigure exim4-config
+
+In the dialog, answer like so:
+Configuration type	 mail sent by smarthost; received via SMTP or fetchmail
+ System mail name	 localhost
+ IP-addresses to listen on for incoming SMTP connections	 127.0.0.1 ; ::1
+Other destinations for which mail is accepted	(leave empty)
+Machines to relay mail for	(leave empty)
+IP address or host name of the outgoing smarthost	smtp.gmail.com::587
+Hide local mail name in outgoing mail ?	yes
+Keep number of DNS-queries minimal (Dial-on-Demand) ?	no
+Delivery method for local mail	mbox format in /var/mail/
+Split configuration into small files ?	no
+Then check /etc/exim4/update-exim4.conf.conf and make sure the settings are as shown:
+
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+dc_eximconfig_configtype='smarthost'
+dc_other_hostnames=''
+dc_local_interfaces='127.0.0.1 ; ::1'
+dc_readhost=''
+dc_relay_domains=''
+dc_minimaldns='false'
+dc_relay_nets=''
+dc_smarthost='smtp.gmail.com::587'
+CFILEMODE='644'
+dc_use_split_config='false'
+dc_hide_mailname='true'
+dc_mailname_in_oh='true'
+dc_localdelivery='mail_spool'
+4. Modify /etc/exim4/passwd.client with your own gmail username and password as shown:
+
+
+1
+2
+3
+gmail-smtp.l.google.com:yourgmailname@gmail.com:yourpassword 
+*.google.com:yourgmailname@gmail.com:yourpassword 
+smtp.gmail.com:yourgmailname@gmail.com:yourpassword
+5. The permissions are probably already set correctly but if not, make sure they’re restricted to root:Debian-exim and only root can read and write to the file (chmod 640).
+
+6. Restart the exim4 daemon:
+
+
+1
+2
+sudo update-exim4.conf
+sudo invoke-rc.d exim4 restart
+7. All done! Now you can send email from your beaglebone by formatting an ASCII files as follows:
+
+
+1
+2
+3
+4
+5
+to: email@domain.com
+from: email@domain.com
+subject: Arbitrary subject goes here!
+ 
+This is the body of my email!
+and sending that file (let’s call it email.txt) with:
+
+
+1
+cat email.txt | sendmail -t
