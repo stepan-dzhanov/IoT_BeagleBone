@@ -45,7 +45,7 @@ void Scenario::WaterDelivery()	{
 	message_buf_t  rbuf;
 	rbuf.mtype = 2;
     sprintf(rbuf.mtext, "1wdl");
-    char str[32];
+    char str[32], str1[32];
     sprintf(str,"Water delivery");
 
 
@@ -67,9 +67,29 @@ void Scenario::WaterDelivery()	{
 			Sendmail("unell@ukr.net", "djanov@gmail.com", "StepanSmartHouseNotification", "Water delivery done");
 			Sendmail("natalidvoreckaya@mail.ru", "djanov@gmail.com", "От умного дома", "Я полил цветок");
 			AddEventToLog(str);
+			memset(str,0,strlen(str));
+			sprintf(str,"Humidity=");
+			sprintf(str1,"%d",hum);
+			memcpy(&str[strlen(str)],str1, strlen(str1));
+			AddEventToLog(str);
 
 		}
-		if (hum>42) w_flg =0;
+		if (hum>42) {
+			if (hum>99) return;
+			memset(str,0,strlen(str));
+		    sprintf(str,"w_flag reset");
+		    AddEventToLog(str);
+		    memset(str,0,strlen(str));
+		    sprintf(str,"Hum=");
+		    sprintf(str1,"%d",hum);
+		    memcpy(&str[strlen(str)],str1, strlen(str1));
+		    AddEventToLog(str);
+
+
+
+
+			w_flg =0;
+		}
 	}
 }
 
@@ -122,5 +142,20 @@ int Scenario::Sendmail(const char *to, const char *from, const char *subject, co
          perror("Failed to invoke sendmail");
      }
      return retval;
+}
+
+void Scenario::Report()	{
+
+	     static int last_day_report = 0;
+	     long int s_time;
+		 struct tm m_time;
+	     s_time = time (NULL);
+	     localtime_r (&s_time, &m_time);
+	     if ((abs(last_day_report - m_time.tm_mday)>1)&&(m_time.tm_hour==10)&&(m_time.tm_min==0))	{
+              ;
+	     }
+
+
+
 }
 
