@@ -258,7 +258,7 @@ uint8_t STM32_nFR24::TM_NRF24L01_Init(uint8_t channel, uint8_t payload_size) {
 	/* Go to RX mode */
 	TM_NRF24L01_PowerUpRx();
 
-	TM_NRF24L01_SetRF(TM_NRF24L01_DataRate_2M, TM_NRF24L01_OutputPower_0dBm);
+	TM_NRF24L01_SetRF(TM_NRF24L01_DataRate_250k, TM_NRF24L01_OutputPower_0dBm);
     TM_NRF24L01_SetMyAddress(MyAddress);
 	TM_NRF24L01_SetTxAddress(TxAddress);
 

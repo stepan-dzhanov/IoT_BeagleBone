@@ -54,6 +54,7 @@ void Scenario::WaterDelivery()	{
 	}
 	else {
 		if ((hum<36)&&(w_flg ==0)){
+			if (hum<15) return;
 			w_flg=1;
 			rbuf.mtype = MESSAGE_TYPE_COMMAND;
 			sprintf((char *)rbuf.mtext, "1wdl20");
@@ -76,14 +77,14 @@ void Scenario::WaterDelivery()	{
 		}
 		if (hum>42) {
 			if (hum>99) return;
-			memset(str,0,strlen(str));
-		    sprintf(str,"w_flag reset");
-		    AddEventToLog(str);
-		    memset(str,0,strlen(str));
-		    sprintf(str,"Hum=");
-		    sprintf(str1,"%d",hum);
-		    memcpy(&str[strlen(str)],str1, strlen(str1));
-		    AddEventToLog(str);
+			//memset(str,0,strlen(str));
+		   // sprintf(str,"w_flag reset");
+		   // AddEventToLog(str);
+		   // memset(str,0,strlen(str));
+		   // sprintf(str,"Hum=");
+		    //sprintf(str1,"%d",hum);
+		    //memcpy(&str[strlen(str)],str1, strlen(str1));
+		   // AddEventToLog(str);
 
 
 
