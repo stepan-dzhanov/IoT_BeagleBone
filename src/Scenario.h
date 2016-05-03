@@ -39,9 +39,9 @@ public:
 	int humidity;
 	int GetHumidity();
 	void AddEventToLog(char *event);
-	int Sendmail(const char *to, const char *from, const char *subject, const char *message);
+	int Sendmail(const char *to, const char *from, const char *subject,  char *message);
 	void Report();
-
+	void EventProcessing (char *event);
 	int msqid;
 	key_t key;
     int buf_length;

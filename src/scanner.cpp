@@ -104,9 +104,17 @@ int main(int argc, char** argv)
 
 		if ((i > 0)) {
 				//perror("msgrcv");
-			cout<<rbuf.mtext<<"\n";
+			char pbuf[32];
+			memcpy(&pbuf,rbuf.mtext,8);
+			pbuf[8]=0;
+			pbuf[3] |= 0x30;
+			pbuf[4] |= 0x30;
+			cout<<pbuf<<"\n";
+
+			scenario->EventProcessing(pbuf);
 				//exit(1);
 		}
+
 		scenario->WaterDelivery();
 		sleep(1);
 

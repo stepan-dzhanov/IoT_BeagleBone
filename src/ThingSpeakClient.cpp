@@ -54,6 +54,32 @@ int ThingSpeakClient::GetField(char *s_field, char *e_field) {
 	   }
 }
 
+
+void ThingSpeakClient::PutDataToChannel(char data, char channel)	{
+	char tx_buff2[32];
+	char tx_buff3[32];
+	char buf[16048];
+	if(connect(sock, (struct sockaddr *)&addr, sizeof(addr)) < 0)
+		   {
+			   perror("ThingSpeak_connect");
+			   return;
+		   }
+
+		   char message[]= "GET /update?api_key=1CV2GX9SLOJGA16D&field1=            ";
+		   message[42]=channel;
+		   sprintf(tx_buff2,"%d",data,"/n");
+		   memcpy(&message[44],tx_buff2,strlen(tx_buff2));
+		   sprintf(tx_buff3,"\r\n\r\n");
+		   memcpy( (&message[44]+strlen(tx_buff2)),tx_buff3,strlen(tx_buff3) );
+		   fcntl(sock, F_SETFL, O_NONBLOCK);
+		   send(sock, message, sizeof(message), 0);
+		  // sleep(1);
+		  // if (recv(sock, buf, 16048, 0)<0) perror("ThingSpeak_error_server");
+
+
+
+}
+
 ThingSpeakClient::~ThingSpeakClient() {
 	// TODO Auto-generated destructor stub
 }

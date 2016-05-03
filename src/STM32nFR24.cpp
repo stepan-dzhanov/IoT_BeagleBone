@@ -600,7 +600,7 @@ bool STM32_nFR24::GetEvent (TM_NRF24L01_Event_t* event) {
 
 
 	    	rbuf.mtype = MESSAGE_TYPE_EVENT;
-	    	memcpy(rbuf.mtext, &dataIn, 5); // ToDo correct lenght
+	    	memcpy(rbuf.mtext, &dataIn, 32); // ToDo correct lenght
 
 	    	buf_length = sizeof(message_buf_t) - sizeof(long);
 	    	if (msgsnd(msqid, &rbuf, buf_length, 0) < 0) {

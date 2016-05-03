@@ -126,7 +126,7 @@ void Scenario::AddEventToLog(char *event )	{
 
 
 }
-int Scenario::Sendmail(const char *to, const char *from, const char *subject, const char *message)
+int Scenario::Sendmail(const char *to, const char *from, const char *subject,  char *message)
 {
     int retval = -1;
     FILE *mailpipe = popen("/usr/lib/sendmail -t", "w");
@@ -143,6 +143,29 @@ int Scenario::Sendmail(const char *to, const char *from, const char *subject, co
          perror("Failed to invoke sendmail");
      }
      return retval;
+}
+
+void Scenario::EventProcessing (char *event)	{
+	 char str_bat[] = "bat";
+	 char str_dor[] = "dor";
+	 char message [32];
+	 sprintf (message,"Low battery in sensor ");
+	 message[22] |=event[3];
+	 message[23] = 0;
+
+
+	if ( !memcmp(&event[5],&str_bat,3) )	{
+		Sendmail("unell@ukr.net", "djanov@gmail.com", "StepanSmartHouseNotification", message);
+	}
+	if ( !memcmp(&event[5],&str_dor,3) )	{
+			Sendmail("unell@ukr.net", "djanov@gmail.com", "StepanSmartHouseNotification", "Door sensor");
+			thingspeak_data = new ThingSpeakClient ;
+		    thingspeak_data->PutDataToChannel(50,'1');
+		    delete (thingspeak_data);
+		    AddEventToLog("Door sensor");
+	}
+
+
 }
 
 void Scenario::Report()	{

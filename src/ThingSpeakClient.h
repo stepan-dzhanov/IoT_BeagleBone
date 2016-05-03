@@ -49,6 +49,7 @@ class ThingSpeakClient {
 public:
 	ThingSpeakClient();
 	int GetField(char *s_field, char *e_field);
+	void PutDataToChannel(char data, char channel);
 	virtual ~ThingSpeakClient();
 
 
