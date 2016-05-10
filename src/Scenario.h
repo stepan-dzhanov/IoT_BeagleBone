@@ -26,6 +26,14 @@
 #include <sys/msg.h>
 
 
+typedef struct {
+	char day;
+	char hour;
+	char min;
+	char timeout;
+	char end;
+}Coocking_sched;
+
 
 class Scenario {
 public:
@@ -42,10 +50,15 @@ public:
 	int Sendmail(const char *to, const char *from, const char *subject,  char *message);
 	void Report();
 	void EventProcessing (char *event);
+	void Coocking(char mode);
+	void LoadCoockingSchedule();
+	void UpdateCoockingSchedule(char *str);
 	int msqid;
 	key_t key;
     int buf_length;
     int fid;
+    char step;
+    Coocking_sched coock_sched[32];
 
 
 

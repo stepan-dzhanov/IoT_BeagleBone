@@ -24,11 +24,27 @@
 #define PORT 1153
 #define BUFSIZE 2048
 
+#define UDP_MESSAGE_ON_FOOD 0x31
+#define UDP_MESSAGE_OFF_FOOD 0x32
+#define UDP_MESSAGE_COOCK_SCH_UPDATE 0x33
+
+
+
+
+
+
+
+
+
+
+
+
 
 class UDPReciver {
 public:
 	UDPReciver();
-	signed int GetMessage(char *message);
+    int GetMessage();
+    void GetData(char *data);
 	virtual ~UDPReciver();
 private:
 	 struct sockaddr_in myaddr;      /* our address */
@@ -37,6 +53,7 @@ private:
 	 signed int recvlen;                    /* # bytes received */
 	 int fd;                         /* our socket */
 	 unsigned char buf[BUFSIZE];     /* receive buffer */
+	 char in_message[1024];
 };
 
 #endif /* UDPRECIVER_H_ */

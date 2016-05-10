@@ -74,13 +74,13 @@ int main(int argc, char** argv)
 	key_t key;
     message_buf_t  rbuf;
     key = QUEUES;
-
-    sleep(180);
+    char mode=0;
+    //sleep(180);
 
 
     Scenario *scenario = new  Scenario();
 
-    //udpReciver = new UDPReciver;
+    UDPReciver *udpReciver = new UDPReciver();
     //system("sudo rm /home/log.txt");
     //system("sudo /home/spi_enable.sh");
 
@@ -115,8 +115,31 @@ int main(int argc, char** argv)
 				//exit(1);
 		}
 
-		scenario->WaterDelivery();
-		sleep(1);
+		//scenario->WaterDelivery();
+		char udp_message;
+		udp_message = udpReciver->GetMessage();
+
+		if (udp_message==UDP_MESSAGE_ON_FOOD) {
+			mode =1;
+			cout<<"ON_COOCKING\n";
+		}
+		if (udp_message==UDP_MESSAGE_OFF_FOOD)	{
+			mode =0;
+			cout<<"OFF_COOCKING\n";
+		}
+		if (udp_message==UDP_MESSAGE_COOCK_SCH_UPDATE)	{
+			char data[32];
+			udpReciver->GetData(data);
+
+			scenario->UpdateCoockingSchedule(data);
+			cout<<"UPDATE_SCHEDULE\n";
+	    }
+
+		scenario->Coocking(mode);
+
+
+
+
 
 
 

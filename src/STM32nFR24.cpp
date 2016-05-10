@@ -580,20 +580,37 @@ STM32_nFR24::STM32_nFR24(uint8_t _cepin, uint8_t _cspin)	{
 
 bool STM32_nFR24::GetEvent (TM_NRF24L01_Event_t* event) {
 	 message_buf_t  rbuf;
+	 static char count =0;
 	if (TM_NRF24L01_DataReady()) {
-		sprintf((char *)command, "1tst");
+		sprintf(command, "%ctst\n",dataIn[0]);
 
 		TM_NRF24L01_GetData(dataIn);
+		usleep(100000);
 
 
 	    sprintf((char *)dataOut, "iam");
 	    if(!memcmp(&dataIn,&dataOut,3)){
-	    	int i =msgrcv(msqid, &rbuf, QUEUES_MESSAGE_SIZE, MESSAGE_TYPE_COMMAND, IPC_NOWAIT);
-	    			if ((i > 0)) {
-	    				memcpy(command, rbuf.mtext,5);
-	    				cout<<"wdl command is sent"<<"\n";
+	    	switch(dataIn[3]){
 
-	    		    }
+	    	case 0x01:
+	    		if(msgrcv(msqid, &rbuf, QUEUES_MESSAGE_SIZE, MESSAGE_TYPE_COMMAND_1, IPC_NOWAIT)>0)	{
+	    			memcpy(command, rbuf.mtext,strlen(rbuf.mtext));
+	    		}
+	    		break;
+	    	case 0x02:
+	    		if(msgrcv(msqid, &rbuf, QUEUES_MESSAGE_SIZE, MESSAGE_TYPE_COMMAND_2, IPC_NOWAIT)>0)	{
+	    			memcpy(command, rbuf.mtext,strlen(rbuf.mtext));
+	    		}
+	       		break;
+	    	case 0x03:
+	    		if(msgrcv(msqid, &rbuf, QUEUES_MESSAGE_SIZE, MESSAGE_TYPE_COMMAND_3, IPC_NOWAIT)>0)	{
+	    			memcpy(command, rbuf.mtext,strlen(rbuf.mtext));
+	    			cout<<"COMMAND "<<rbuf.mtext<<"\n";
+	    		}
+	    		break;
+	    	}
+
+
 	    	AddSensorToList(dataIn[4], dataIn[3], dataIn[5]);
 	    	AddSensorToLog(dataIn[3],dataIn[5]);
 	    	//PrintSensorList() ;
@@ -605,7 +622,7 @@ bool STM32_nFR24::GetEvent (TM_NRF24L01_Event_t* event) {
 	    	buf_length = sizeof(message_buf_t) - sizeof(long);
 	    	if (msgsnd(msqid, &rbuf, buf_length, 0) < 0) {
 	    	        perror("RF_module_thead");
-	    	       // exit(1);
+
 	    	}
 		//	cout<<"sent message"<<"\n";
 			TM_NRF24L01_Transmit((uint8_t*)command);
@@ -614,7 +631,7 @@ bool STM32_nFR24::GetEvent (TM_NRF24L01_Event_t* event) {
 			TM_NRF24L01_PowerUpRx();
 
         }
-	    sprintf((char *)dataOut, "OK");
+	    sprintf((char *)dataOut, "OK\n");
 	    if(!memcmp(&dataIn,&dataOut,2)){
 	    	//cout<<"ACK"<<"\n";
 	    }

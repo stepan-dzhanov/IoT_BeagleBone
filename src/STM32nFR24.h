@@ -208,7 +208,7 @@ private:
 	uint8_t ce_pin; /**< "Chip Enable" pin, activates the RX or TX role */
 	uint8_t csn_pin; /**< SPI Chip select */
 	SPI* spi;
-	uint8_t command[32];
+	char command[32];
 	uint8_t dataIn[32];
 	uint8_t dataOut[32];
 	TM_NRF24L01_Transmit_Status_t transmissionStatus;

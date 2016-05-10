@@ -17,8 +17,10 @@ typedef struct mymsgbuf {
          char    mtext[QUEUES_MESSAGE_SIZE];
 } message_buf_t;
 
-#define MESSAGE_TYPE_EVENT 1
-#define MESSAGE_TYPE_COMMAND 2
+#define MESSAGE_TYPE_EVENT 10
+#define MESSAGE_TYPE_COMMAND_1 1
+#define MESSAGE_TYPE_COMMAND_2 2
+#define MESSAGE_TYPE_COMMAND_3 3
 
 
 

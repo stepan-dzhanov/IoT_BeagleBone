@@ -11,6 +11,7 @@
 Scenario::Scenario() {
 
 	 key = QUEUES;
+	 LoadCoockingSchedule();
      if ((msqid = msgget(QUEUES, IPC_CREAT | 0666)) < 0) {
 		   perror("Scenario_msgget");
 		   exit(1);
@@ -25,6 +26,7 @@ Scenario::Scenario() {
               Sendmail("unell@ukr.net", "djanov@gmail.com", "StepanSmartHouseNotification", "Reboot system");
               Sendmail("natalidvoreckaya@mail.ru", "djanov@gmail.com", "От умного дома", "Я начал работать. Буду информировть тебя о событиях");
               AddEventToLog(str);
+     step =0;
 
 }
 
@@ -43,8 +45,8 @@ void Scenario::WaterDelivery()	{
 	static char w_flg=0;
 	int hum;
 	message_buf_t  rbuf;
-	rbuf.mtype = 2;
-    sprintf(rbuf.mtext, "1wdl");
+
+    sprintf(rbuf.mtext, "%cwdl\n",0x01);
     char str[32], str1[32];
     sprintf(str,"Water delivery");
 
@@ -53,15 +55,15 @@ void Scenario::WaterDelivery()	{
 		std::cout<<"Scenario_ NO internet connection"<<"\n";
 	}
 	else {
-		if ((hum<36)&&(w_flg ==0)){
+		if ((hum<40)&&(w_flg ==0)){
 			if (hum<15) return;
 			w_flg=1;
-			rbuf.mtype = MESSAGE_TYPE_COMMAND;
+			rbuf.mtype = MESSAGE_TYPE_COMMAND_1;
 			sprintf((char *)rbuf.mtext, "1wdl20");
 			buf_length = sizeof(message_buf_t) - sizeof(long);
 			if (msgsnd(msqid, &rbuf, buf_length, 0) < 0) {
 					perror("Scenario_msgsnd");
-					exit(1);
+
 			}
 			std::cout<<"WDL MESSAGE is sent"<<"\n";
 
@@ -93,6 +95,124 @@ void Scenario::WaterDelivery()	{
 		}
 	}
 }
+
+void Scenario::UpdateCoockingSchedule(char *str){
+	char  st[32];
+	coock_sched[0].day =str[0]&0x0F;
+	coock_sched[0].hour=10*(str[1]&0x0F)+1*(str[2]&0x0F);
+	coock_sched[0].min=10*(str[3]&0x0F)+1*(str[4]&0x0F);
+	coock_sched[0].timeout=10*(str[5]&0x0F)+1*(str[6]&0x0F);
+    coock_sched[0].end=str[7]&0x0F;
+    step = 0;
+
+    sprintf(st,"Update coock schedule\n");
+    AddEventToLog(st);
+}
+
+void Scenario::LoadCoockingSchedule()	{
+
+	coock_sched[0].day =1;
+	coock_sched[0].hour=15;
+	coock_sched[0].min=30;
+    coock_sched[0].timeout=10;
+	coock_sched[0].end=1;
+
+	coock_sched[1].day =2;
+	coock_sched[1].hour=14;
+	coock_sched[1].min=39;
+	coock_sched[1].timeout=10;
+	coock_sched[1].end=1;
+
+	coock_sched[2].day =3;
+	coock_sched[2].hour=14;
+	coock_sched[2].min=38;
+	coock_sched[2].timeout=10;
+	coock_sched[2].end=1;
+
+	coock_sched[3].day =9;
+	coock_sched[3].hour=13;
+	coock_sched[3].min=35;
+	coock_sched[3].timeout=10;
+	coock_sched[3].end=0;
+
+
+}
+
+
+
+
+
+
+void Scenario::Coocking(char mode)	{
+#define DAY 8
+#define HOUR 13
+#define MIN  7
+
+    message_buf_t  rbuf;
+    static char on_mode=0;
+    static char off_mode=0;
+    static char coock_mode =0;
+
+    long int s_time;
+   	struct tm m_time;
+
+    s_time = time (NULL);
+    localtime_r (&s_time, &m_time);
+
+    if ( (!mode)&&(!off_mode)){
+    	rbuf.mtype = MESSAGE_TYPE_COMMAND_3;
+    	sprintf(rbuf.mtext, "%crld\n",0x03);
+        buf_length = sizeof(message_buf_t) - sizeof(long);
+        if (msgsnd(msqid, &rbuf, buf_length, 0) < 0) {
+    		perror("Scenario_msgsnd");
+        }
+        off_mode = 1;
+        on_mode = 0;
+    }
+
+    if ( (mode)&&(!on_mode)){
+        rbuf.mtype = MESSAGE_TYPE_COMMAND_3;
+        sprintf(rbuf.mtext, "%csld\n",0x03);
+        buf_length = sizeof(message_buf_t) - sizeof(long);
+        if (msgsnd(msqid, &rbuf, buf_length, 0) < 0) {
+        	perror("Scenario_msgsnd");
+        }
+        on_mode = 1;
+        off_mode = 0;
+    }
+    if (!mode) return;
+
+
+
+    if ( (m_time.tm_wday==coock_sched[step].day)&&(m_time.tm_hour==coock_sched[step].hour)&&( abs(m_time.tm_min-coock_sched[step].min)<10 )&&(m_time.tm_min>=coock_sched[step].min)   ){
+
+    	rbuf.mtype = MESSAGE_TYPE_COMMAND_3;
+        sprintf(rbuf.mtext, "%cwdl%d",0x03,coock_sched[step].timeout);//,coock_sched[step].timeout);
+        buf_length = sizeof(message_buf_t) - sizeof(long);
+    	if (msgsnd(msqid, &rbuf, buf_length, 0) < 0) {
+          	perror("Scenario_msgsnd");
+    	}
+    	step++;
+    	if (!coock_sched[step].end) step =0;
+    	char str[32];
+    	sprintf(str,"Coocking start");
+    	AddEventToLog(str);
+    	std::cout<<"Coocking\n";
+
+    }
+
+
+
+
+
+
+
+
+
+
+}
+
+
 
 
 void Scenario::AddEventToLog(char *event )	{
@@ -128,6 +248,7 @@ void Scenario::AddEventToLog(char *event )	{
 }
 int Scenario::Sendmail(const char *to, const char *from, const char *subject,  char *message)
 {
+	 return 0;
     int retval = -1;
     FILE *mailpipe = popen("/usr/lib/sendmail -t", "w");
     if (mailpipe != NULL) {
@@ -162,7 +283,8 @@ void Scenario::EventProcessing (char *event)	{
 			thingspeak_data = new ThingSpeakClient ;
 		    thingspeak_data->PutDataToChannel(50,'1');
 		    delete (thingspeak_data);
-		    AddEventToLog("Door sensor");
+		    sprintf(message,"Door sensor");
+		    AddEventToLog(message);
 	}
 
 

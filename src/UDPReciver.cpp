@@ -31,14 +31,35 @@ UDPReciver::UDPReciver() {
 }
 
 
-signed int UDPReciver::GetMessage(char *message) {
+int UDPReciver::GetMessage() {
+	char message[32];
+
+    for (int i=0;i<30;i++)in_message[i]=0;
 	recvlen = read(fd, buf, BUFSIZE);//, 0, (struct sockaddr *)&remaddr, &addrlen);
-	if(recvlen>0)memcpy(message,buf,recvlen);
-	return recvlen;
+	if(recvlen>0)	{
+		memcpy(in_message,buf,recvlen);
+
+      //  std::cout<<"UDP received "<<in_message<<'\n';
+        sprintf(message,"on food");
+        if( !memcmp(&in_message,&message,7) ) return UDP_MESSAGE_ON_FOOD;
+        sprintf(message,"off food");
+        if( !memcmp(&in_message,&message,8)) return UDP_MESSAGE_OFF_FOOD;
+        sprintf(message,"cup");
+        if( !memcmp(&in_message,&message,3) ) return UDP_MESSAGE_COOCK_SCH_UPDATE;
+        return 0;
+
+	}
+	return 0;
+
+}
+
+
+void UDPReciver::GetData(char *data)	{
+	memcpy(data,&in_message[3],16);
 
 }
 
 
 UDPReciver::~UDPReciver() {
-	// TODO Auto-generated destructor stub
+	close(fd);
 }
