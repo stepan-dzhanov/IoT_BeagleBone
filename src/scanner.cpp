@@ -75,7 +75,7 @@ int main(int argc, char** argv)
     message_buf_t  rbuf;
     key = QUEUES;
     char mode=0;
-    //sleep(180);
+    sleep(180);
 
 
     Scenario *scenario = new  Scenario();
@@ -115,7 +115,7 @@ int main(int argc, char** argv)
 				//exit(1);
 		}
 
-		//scenario->WaterDelivery();
+		scenario->WaterDelivery();
 		char udp_message;
 		udp_message = udpReciver->GetMessage();
 

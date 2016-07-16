@@ -46,6 +46,13 @@ void Scenario::WaterDelivery()	{
 	int hum;
 	message_buf_t  rbuf;
 
+	static int last_day_water = 0;
+    long int s_time;
+    struct tm m_time;
+    s_time = time (NULL);
+    localtime_r (&s_time, &m_time);
+
+
     sprintf(rbuf.mtext, "%cwdl\n",0x01);
     char str[32], str1[32];
     sprintf(str,"Water delivery");
@@ -55,8 +62,10 @@ void Scenario::WaterDelivery()	{
 		std::cout<<"Scenario_ NO internet connection"<<"\n";
 	}
 	else {
-		if ((hum<40)&&(w_flg ==0)){
+		if ((hum<36)&&(w_flg ==0)){
 			if (hum<15) return;
+			if ((m_time.tm_mday - last_day_water)<2) return;
+			last_day_water = m_time.tm_mday;
 			w_flg=1;
 			rbuf.mtype = MESSAGE_TYPE_COMMAND_1;
 			sprintf((char *)rbuf.mtext, "1wdl20");
@@ -75,6 +84,7 @@ void Scenario::WaterDelivery()	{
 			sprintf(str1,"%d",hum);
 			memcpy(&str[strlen(str)],str1, strlen(str1));
 			AddEventToLog(str);
+
 
 		}
 		if (hum>42) {
