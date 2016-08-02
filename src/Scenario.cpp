@@ -16,7 +16,7 @@ Scenario::Scenario() {
 		   perror("Scenario_msgget");
 		   exit(1);
 	 }
-     fid = open("scenario_log.txt", O_RDWR | O_CREAT );
+     fid = open("scenario_log.txt", O_RDWR | O_CREAT | O_APPEND );
           if (fid<0){
          	 perror("Scenario_fopen");
           }
@@ -62,7 +62,7 @@ void Scenario::WaterDelivery()	{
 		std::cout<<"Scenario_ NO internet connection"<<"\n";
 	}
 	else {
-		if ((hum<36)&&(w_flg ==0)){
+		if ((hum<19)&&(w_flg ==0)){
 			if (hum<15) return;
 			if ((m_time.tm_mday - last_day_water)<2) return;
 			last_day_water = m_time.tm_mday;

@@ -59,7 +59,10 @@ void *RF_Service(void *threadid)
 	TM_NRF24L01_Transmit_Status_t transmissionStatus;
 	STM32_nFR24 transmitter(115, 112);
 	transmitter.TM_NRF24L01_Init(ch,32);
-	while(1) {transmitter.GetEvent(NULL);}
+	while(1) {
+		transmitter.GetEvent(NULL);
+		usleep(300000);
+	}
 }
 
 
@@ -136,6 +139,7 @@ int main(int argc, char** argv)
 	    }
 
 		scenario->Coocking(mode);
+		sleep(1);
 
 
 

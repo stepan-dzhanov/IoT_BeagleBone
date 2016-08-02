@@ -55,7 +55,7 @@ clean:
 	-@echo ' '
 
 post-build:
-	-scp btest root@192.168.0.104:/home;
+	-scp btest root@93.74.253.29:/home;
 	-@echo ' '
 
 .PHONY: all clean dependents
