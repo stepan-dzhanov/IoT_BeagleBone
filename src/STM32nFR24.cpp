@@ -611,7 +611,7 @@ bool STM32_nFR24::GetEvent (TM_NRF24L01_Event_t* event) {
 	    	}
 
 
-	    	AddSensorToList(dataIn[4], dataIn[3], dataIn[5]);
+	    //	AddSensorToList(dataIn[4], dataIn[3], dataIn[5]);
 	    	AddSensorToLog(dataIn[3],dataIn[5]);
 	    	//PrintSensorList() ;
 

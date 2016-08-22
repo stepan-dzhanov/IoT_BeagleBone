@@ -36,9 +36,11 @@ Scenario::~Scenario() {
 }
 
 int Scenario::GetHumidity()	{
+	int hum;
 	thingspeak_data = new ThingSpeakClient ;
-	return thingspeak_data->GetField("<field5>","</field5>");
+	hum =  thingspeak_data->GetField("<field5>","</field5>");
 	delete (thingspeak_data);
+	return hum;
 }
 
 void Scenario::WaterDelivery()	{

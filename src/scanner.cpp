@@ -25,6 +25,10 @@
 #include<sys/types.h>
 #include<sys/ipc.h>
 #include<sys/msg.h>
+#include <pwd.h>
+#include <signal.h>
+#include <netinet/in.h>
+#include <sys/mman.h>
 
 
 
@@ -79,6 +83,7 @@ int main(int argc, char** argv)
     key = QUEUES;
     char mode=0;
     sleep(180);
+    signal(SIGPIPE, SIG_IGN);
 
 
     Scenario *scenario = new  Scenario();

@@ -30,15 +30,14 @@ int ThingSpeakClient::GetField(char *s_field, char *e_field) {
 	if(connect(sock, (struct sockaddr *)&addr, sizeof(addr)) < 0)
 	   {
 		   perror("ThingSpeak_connect");
-		   return -1;
+		   //return -1;
 	   }
 
 	   char message[]= "GET /channels/46795/feeds.xml?results=2\r\n\r\n";
 	   fcntl(sock, F_SETFL, O_NONBLOCK);
 	   send(sock, message, sizeof(message), 0);
 	   sleep(1);
-	   if (recv(sock, buf, 16048, 0)<0) return -1;
-	   else{
+	   if (recv(sock, buf, 16048, 0)>=0)	{
 		   std::string sstr(buf);
 		   pos = sstr.find("<feed>");
 		   start_pos = sstr.find(s_field, pos)+8;
@@ -52,6 +51,7 @@ int ThingSpeakClient::GetField(char *s_field, char *e_field) {
 
 		   return humidity;
 	   }
+	   else return 0;
 }
 
 
@@ -62,7 +62,7 @@ void ThingSpeakClient::PutDataToChannel(char data, char channel)	{
 	if(connect(sock, (struct sockaddr *)&addr, sizeof(addr)) < 0)
 		   {
 			   perror("ThingSpeak_connect");
-			   return;
+			   //return;
 		   }
 
 		   char message[]= "GET /update?api_key=1CV2GX9SLOJGA16D&field1=            ";
