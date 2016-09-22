@@ -53,6 +53,7 @@ public:
 	void Coocking(char mode);
 	void LoadCoockingSchedule();
 	void UpdateCoockingSchedule(char *str);
+	void TestOK(char addr);
 	int msqid;
 	key_t key;
     int buf_length;

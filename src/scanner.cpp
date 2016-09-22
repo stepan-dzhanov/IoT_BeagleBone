@@ -38,6 +38,7 @@
 #include "STM32nFR24.h"
 #include "ThingSpeakClient.h"
 #include "UDPReciver.h"
+#include "ComPort.hpp"
 
 #include "Scenario.h"
 #include "protocol.h"
@@ -70,11 +71,109 @@ void *RF_Service(void *threadid)
 }
 
 
+void *RF_Gate(void *threadid)
+{
+    char a =0;
+    char pointer_data_from_gate=0;
+	char data_from_gate [128];
+	char tmp_data [128];
+	char command[34];
+	int bytes_from_gate;
+	int i;
+	ComPort *gate_port;
+	message_buf_t  rbuf;
+	key_t key ;
+	int msqid;
+
+
+	gate_port = new ComPort("/dev/ttyO4", 9600);
+    key = QUEUES;
+    if ((msqid = msgget(key, 0666)) < 0) {
+        	        perror("msgget");
+        	        exit(1);
+    }
+
+	//if ((msqid = msgget(QUEUES, IPC_CREAT | 0666)) < 0) {
+		//perror("ms1gget error");
+		//exit(-1);
+	//}
+
+
+
+
+
+	if (gate_port<=0)	{
+		perror ("Error COM port");
+		exit (-1);
+	}
+
+
+
+
+	while(1) {
+		bytes_from_gate = gate_port->ReadDataPort( tmp_data , 64);
+
+
+	    if ((bytes_from_gate>0)){
+					memcpy(&data_from_gate[pointer_data_from_gate],tmp_data,bytes_from_gate);
+					pointer_data_from_gate += bytes_from_gate;
+		    }
+		if (pointer_data_from_gate>=34){
+			for (i=0; i<128; i++) { if ( (data_from_gate[i]==0x0D)&&(data_from_gate[i-1]==0x0A) ) break;}
+
+			if (i<=33) {
+				if (i==33){
+
+
+					rbuf.mtype = MESSAGE_TYPE_EVENT;
+					memcpy(rbuf.mtext,data_from_gate, 32);
+					//cout<<rbuf.mtext<<'\n';
+					int buf_length = sizeof(message_buf_t) - sizeof(long);
+					if (msgsnd(msqid, &rbuf, buf_length, 0) < 0) {
+						perror("RF_gate_thead");
+					}
+					usleep(300000);
+					if(msgrcv(msqid, &rbuf, QUEUES_MESSAGE_SIZE, MESSAGE_TYPE_COMMAND_4, IPC_NOWAIT)>0)	{
+						//sprintf(command,"%ctst\n\r",0x05);
+						memcpy(command,rbuf.mtext,32);
+						command[32] = 0x0A;
+						command[33] = 0x0D;
+						gate_port->WriteDataPort(command,7);
+						//cout<<"COMMAND"<<command;
+						usleep(500000);
+						bytes_from_gate = gate_port->ReadDataPort( tmp_data , 64);
+						//if (bytes_from_gate){
+						//cout<<"data"<<tmp_data;
+						//}
+					}
+				}
+				memcpy(tmp_data,&data_from_gate[i+1],pointer_data_from_gate-(i+1));
+				memcpy(data_from_gate,tmp_data,pointer_data_from_gate-i);
+				pointer_data_from_gate = pointer_data_from_gate-i-1;
+
+
+			}
+
+
+
+		}
+
+
+
+
+		//usleep(300);
+
+	}
+}
+
 
 
 int main(int argc, char** argv)
 {
 	pthread_t threads;
+	char command[64];
+	char rx[64];
+
 	int rc;
 	int i,result;
 	int msqid;
@@ -82,13 +181,26 @@ int main(int argc, char** argv)
     message_buf_t  rbuf;
     key = QUEUES;
     char mode=0;
-    sleep(180);
+    sleep(10);
     signal(SIGPIPE, SIG_IGN);
 
 
     Scenario *scenario = new  Scenario();
 
     UDPReciver *udpReciver = new UDPReciver();
+
+    /*ComPort *gate_port;
+    gate_port = new ComPort("/dev/ttyO4", 9600);
+    sprintf(command,"hello world");
+    sprintf(rx,"ffffffffffffff");
+    gate_port->WriteDataPort(command,7);
+    sleep(1);
+    gate_port->ReadDataPort(rx,32);
+    cout<<rx;
+    exit(0);*/
+
+
+
     //system("sudo rm /home/log.txt");
     //system("sudo /home/spi_enable.sh");
 
@@ -99,6 +211,12 @@ int main(int argc, char** argv)
             exit(-1);
     }
     sleep(1);
+
+    rc = pthread_create(&threads, NULL,RF_Gate, (void *)i);
+       if (rc){
+               cout << "Error:unable to create thread," << rc << endl;
+               exit(-1);
+    }
 
 
     if ((msqid = msgget(key, 0666)) < 0) {
@@ -114,10 +232,12 @@ int main(int argc, char** argv)
 				//perror("msgrcv");
 			char pbuf[32];
 			memcpy(&pbuf,rbuf.mtext,8);
+			if(pbuf[3]==0x05) scenario->TestOK(0x05);
 			pbuf[8]=0;
 			pbuf[3] |= 0x30;
 			pbuf[4] |= 0x30;
 			cout<<pbuf<<"\n";
+
 
 			scenario->EventProcessing(pbuf);
 				//exit(1);

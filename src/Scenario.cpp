@@ -43,6 +43,22 @@ int Scenario::GetHumidity()	{
 	return hum;
 }
 
+void Scenario::TestOK(char addr) {
+	message_buf_t  rbuf;
+	rbuf.mtype = MESSAGE_TYPE_COMMAND_4;
+	sprintf((char *)rbuf.mtext, "%ctst\n\r",addr);
+	buf_length = sizeof(message_buf_t) - sizeof(long);
+	if (msgsnd(msqid, &rbuf, buf_length, 0) < 0) {
+		perror("Scenario_msgsnd");
+
+	}
+	//std::cout<<"TST command is sent"<<"\n";
+
+}
+
+
+
+
 void Scenario::WaterDelivery()	{
 	static char w_flg=0;
 	int hum;

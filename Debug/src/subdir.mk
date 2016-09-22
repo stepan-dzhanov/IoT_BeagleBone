@@ -4,6 +4,7 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/ComPort.cpp \
 ../src/STM32nFR24.cpp \
 ../src/Scenario.cpp \
 ../src/ThingSpeakClient.cpp \
@@ -17,6 +18,7 @@ C_SRCS += \
 ../src/compatibility.c 
 
 OBJS += \
+./src/ComPort.o \
 ./src/STM32nFR24.o \
 ./src/Scenario.o \
 ./src/ThingSpeakClient.o \
@@ -31,6 +33,7 @@ C_DEPS += \
 ./src/compatibility.d 
 
 CPP_DEPS += \
+./src/ComPort.d \
 ./src/STM32nFR24.d \
 ./src/Scenario.d \
 ./src/ThingSpeakClient.d \

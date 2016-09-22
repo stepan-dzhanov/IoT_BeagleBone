@@ -21,7 +21,7 @@ typedef struct mymsgbuf {
 #define MESSAGE_TYPE_COMMAND_1 1
 #define MESSAGE_TYPE_COMMAND_2 2
 #define MESSAGE_TYPE_COMMAND_3 3
-
+#define MESSAGE_TYPE_COMMAND_4 4
 
 
 
