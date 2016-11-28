@@ -30,6 +30,19 @@ UDPReciver::UDPReciver() {
 
 }
 
+int UDPReciver::SentMessage(char *message) {
+	 	 	 	remaddr.sin_family = AF_INET;
+			    remaddr.sin_addr.s_addr = inet_addr("192.168.0.105");//htonl(INADDR_BROADCAST);
+		        remaddr.sin_port = htons(PORT);
+		        					//strlen(message)
+		        if (sendto(fd, message,strlen(message), 0, (struct sockaddr *)&remaddr, sizeof(remaddr)) < 0) {
+		        	perror("sent message failed");
+		        }
+
+
+
+}
+
 
 int UDPReciver::GetMessage() {
 	char message[32];
@@ -46,6 +59,11 @@ int UDPReciver::GetMessage() {
         if( !memcmp(&in_message,&message,8)) return UDP_MESSAGE_OFF_FOOD;
         sprintf(message,"cup");
         if( !memcmp(&in_message,&message,3) ) return UDP_MESSAGE_COOCK_SCH_UPDATE;
+        sprintf(message,"get temp");
+        if( !memcmp(&in_message,&message,8) ) return UDP_MESSAGE_GET_TEMP_VALUE;
+        sprintf(message,"scp");
+        if( !memcmp(&in_message,&message,3) ) return UDP_MESSAGE_START_COOCKING;
+        return 0;
         return 0;
 
 	}

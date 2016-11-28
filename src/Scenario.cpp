@@ -8,6 +8,10 @@
 #include "Scenario.h"
 #include "protocol.h"
 
+#include <cstdio>
+#include <iostream>
+#include <string>
+
 Scenario::Scenario() {
 
 	 key = QUEUES;
@@ -45,14 +49,44 @@ int Scenario::GetHumidity()	{
 
 void Scenario::TestOK(char addr) {
 	message_buf_t  rbuf;
-	rbuf.mtype = MESSAGE_TYPE_COMMAND_4;
-	sprintf((char *)rbuf.mtext, "%ctst\n\r",addr);
+	rbuf.mtype = addr;
+	sprintf(rbuf.mtext, "%ctst\n\r",addr);
 	buf_length = sizeof(message_buf_t) - sizeof(long);
 	if (msgsnd(msqid, &rbuf, buf_length, 0) < 0) {
 		perror("Scenario_msgsnd");
-
 	}
-	//std::cout<<"TST command is sent"<<"\n";
+
+}
+void Scenario::CH1ON(char addr) {
+	message_buf_t  rbuf;
+	rbuf.mtype = addr;
+	sprintf((char *)rbuf.mtext, "%cch1on\n\r",addr);
+	buf_length = sizeof(message_buf_t) - sizeof(long);
+	if (msgsnd(msqid, &rbuf, buf_length, 0) < 0) {
+		perror("Scenario_msgsnd");
+	}
+
+}
+
+
+void Scenario::StartCoockingMV(char addr, char *coocking_params) {
+#define COOCK_PARAMS_LEN 12
+	message_buf_t  rbuf;
+	rbuf.mtype = addr;
+	rbuf.mtext[0] = addr;
+	rbuf.mtext[1] = 's';
+	rbuf.mtext[2] = 'c';
+	rbuf.mtext[3] = 'p';
+	memcpy(&rbuf.mtext[4],coocking_params,COOCK_PARAMS_LEN);
+	rbuf.mtext[COOCK_PARAMS_LEN+4] = '\n';
+	rbuf.mtext[COOCK_PARAMS_LEN+5] = '\r';
+	//std::cout<<"MAIN THREAD"<<rbuf.mtext<<'\n';
+	//sprintf((char *)rbuf.mtext, "%c\n\r",addr);
+	buf_length = sizeof(message_buf_t) - sizeof(long);
+	if (msgsnd(msqid, &rbuf, buf_length, 0) < 0) {
+		perror("Scenario_msgsnd");
+	}
+	AddEventToLog("Start coocking MV");
 
 }
 
@@ -81,8 +115,8 @@ void Scenario::WaterDelivery()	{
 	}
 	else {
 		if ((hum<19)&&(w_flg ==0)){
-			if (hum<15) return;
-			if ((m_time.tm_mday - last_day_water)<2) return;
+			if (hum<0) return;
+			if ((m_time.tm_mday - last_day_water)<4) return;
 			last_day_water = m_time.tm_mday;
 			w_flg=1;
 			rbuf.mtype = MESSAGE_TYPE_COMMAND_1;

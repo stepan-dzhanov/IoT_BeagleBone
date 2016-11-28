@@ -54,6 +54,8 @@ public:
 	void LoadCoockingSchedule();
 	void UpdateCoockingSchedule(char *str);
 	void TestOK(char addr);
+	void CH1ON(char addr);
+	void StartCoockingMV(char addr, char *coocking_params);
 	int msqid;
 	key_t key;
     int buf_length;

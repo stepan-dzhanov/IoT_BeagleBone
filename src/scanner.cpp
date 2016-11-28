@@ -34,7 +34,7 @@
 
 
 
-
+#include "NRF905Gate.h"
 #include "STM32nFR24.h"
 #include "ThingSpeakClient.h"
 #include "UDPReciver.h"
@@ -73,97 +73,12 @@ void *RF_Service(void *threadid)
 
 void *RF_Gate(void *threadid)
 {
-    char a =0;
-    char pointer_data_from_gate=0;
-	char data_from_gate [128];
-	char tmp_data [128];
-	char command[34];
-	int bytes_from_gate;
-	int i;
-	ComPort *gate_port;
-	message_buf_t  rbuf;
-	key_t key ;
-	int msqid;
-
-
-	gate_port = new ComPort("/dev/ttyO4", 9600);
-    key = QUEUES;
-    if ((msqid = msgget(key, 0666)) < 0) {
-        	        perror("msgget");
-        	        exit(1);
-    }
-
-	//if ((msqid = msgget(QUEUES, IPC_CREAT | 0666)) < 0) {
-		//perror("ms1gget error");
-		//exit(-1);
-	//}
-
-
-
-
-
-	if (gate_port<=0)	{
-		perror ("Error COM port");
-		exit (-1);
+	NRF905Gate *gate;
+	gate = new NRF905Gate();
+	while(1){
+		gate->GetEvent();
 	}
 
-
-
-
-	while(1) {
-		bytes_from_gate = gate_port->ReadDataPort( tmp_data , 64);
-
-
-	    if ((bytes_from_gate>0)){
-					memcpy(&data_from_gate[pointer_data_from_gate],tmp_data,bytes_from_gate);
-					pointer_data_from_gate += bytes_from_gate;
-		    }
-		if (pointer_data_from_gate>=34){
-			for (i=0; i<128; i++) { if ( (data_from_gate[i]==0x0D)&&(data_from_gate[i-1]==0x0A) ) break;}
-
-			if (i<=33) {
-				if (i==33){
-
-
-					rbuf.mtype = MESSAGE_TYPE_EVENT;
-					memcpy(rbuf.mtext,data_from_gate, 32);
-					//cout<<rbuf.mtext<<'\n';
-					int buf_length = sizeof(message_buf_t) - sizeof(long);
-					if (msgsnd(msqid, &rbuf, buf_length, 0) < 0) {
-						perror("RF_gate_thead");
-					}
-					usleep(300000);
-					if(msgrcv(msqid, &rbuf, QUEUES_MESSAGE_SIZE, MESSAGE_TYPE_COMMAND_4, IPC_NOWAIT)>0)	{
-						//sprintf(command,"%ctst\n\r",0x05);
-						memcpy(command,rbuf.mtext,32);
-						command[32] = 0x0A;
-						command[33] = 0x0D;
-						gate_port->WriteDataPort(command,7);
-						//cout<<"COMMAND"<<command;
-						usleep(500000);
-						bytes_from_gate = gate_port->ReadDataPort( tmp_data , 64);
-						//if (bytes_from_gate){
-						//cout<<"data"<<tmp_data;
-						//}
-					}
-				}
-				memcpy(tmp_data,&data_from_gate[i+1],pointer_data_from_gate-(i+1));
-				memcpy(data_from_gate,tmp_data,pointer_data_from_gate-i);
-				pointer_data_from_gate = pointer_data_from_gate-i-1;
-
-
-			}
-
-
-
-		}
-
-
-
-
-		//usleep(300);
-
-	}
 }
 
 
@@ -172,6 +87,7 @@ int main(int argc, char** argv)
 {
 	pthread_t threads;
 	char command[64];
+	char pr[32];
 	char rx[64];
 
 	int rc;
@@ -183,7 +99,11 @@ int main(int argc, char** argv)
     char mode=0;
     sleep(10);
     signal(SIGPIPE, SIG_IGN);
-
+    unsigned char temp=0;
+    char statusMV=0;
+    char statusHT=0;
+    char data[32];
+    static char flg=0;
 
     Scenario *scenario = new  Scenario();
 
@@ -232,7 +152,21 @@ int main(int argc, char** argv)
 				//perror("msgrcv");
 			char pbuf[32];
 			memcpy(&pbuf,rbuf.mtext,8);
-			if(pbuf[3]==0x05) scenario->TestOK(0x05);
+			if((pbuf[3]==0x05)&&(pbuf[0]=='i')) {
+				scenario->TestOK(5);
+
+
+				temp = pbuf[5];
+				statusMV=pbuf[6];
+				statusHT=pbuf[7];
+				float tmpf = ( ((float)temp)*0.847  );
+				temp = (int)tmpf;
+
+				sprintf(pr,"%d temperature %c%c status\n",temp,statusMV,statusHT);
+				cout<<pr;
+			}
+
+
 			pbuf[8]=0;
 			pbuf[3] |= 0x30;
 			pbuf[4] |= 0x30;
@@ -240,6 +174,7 @@ int main(int argc, char** argv)
 
 
 			scenario->EventProcessing(pbuf);
+
 				//exit(1);
 		}
 
@@ -256,15 +191,33 @@ int main(int argc, char** argv)
 			cout<<"OFF_COOCKING\n";
 		}
 		if (udp_message==UDP_MESSAGE_COOCK_SCH_UPDATE)	{
-			char data[32];
+
 			udpReciver->GetData(data);
 
 			scenario->UpdateCoockingSchedule(data);
 			cout<<"UPDATE_SCHEDULE\n";
 	    }
+		if (udp_message==UDP_MESSAGE_START_COOCKING)	{
+
+			udpReciver->GetData(data);
+		    scenario->StartCoockingMV(5,data);
+		    usleep(100000);
+		    sprintf(data,"%c%c%c temperature\n",temp,statusMV,statusHT);
+		    udpReciver->SentMessage(data);
+
+			cout<<"START_MV_COOCKING\n";
+		}
+		if (udp_message==UDP_MESSAGE_GET_TEMP_VALUE)	{
+
+			sprintf(data,"%c%c%c temperature\n",temp,statusMV,statusHT);
+
+			udpReciver->SentMessage(data);
+
+
+		}
 
 		scenario->Coocking(mode);
-		sleep(1);
+		usleep(500000);
 
 
 
