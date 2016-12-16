@@ -21,12 +21,35 @@ void GPIO::open(int port, int DDR)
 {
 	FILE *f;
 	f = fopen("/sys/class/gpio/export", "w");
+	if (f<=0)	{
+		usleep(100000);
+		f = fopen("/sys/class/gpio/export", "w");
+		if (f<=0){
+			perror("GPIO export access denided");
+			exit(1);
+		}
+
+	}
 	fprintf(f, "%d\n", port);
 	fclose(f);
 
 	char file[128];
 	sprintf(file, "/sys/class/gpio/gpio%d/direction", port);
 	f = fopen(file, "w");
+	if (f<=0)	{
+			usleep(100000);
+			f = fopen(file, "w");
+			if (f<=0){
+				perror("GPIO direction access denided");
+				exit(1);
+			}
+
+	}
+
+
+
+
+
 	if (DDR == 0)	fprintf(f, "in\n");
 	else		fprintf(f, "out\n");
 	fclose(f);
@@ -36,6 +59,17 @@ void GPIO::close(int port)
 {
 	FILE *f;
 	f = fopen("/sys/class/gpio/unexport", "w");
+	if (f<=0)	{
+			usleep(100000);
+			f = fopen("/sys/class/gpio/unexport", "w");
+			if (f<=0){
+				perror("GPIO unexport access denided");
+				exit(1);
+			}
+
+	}
+
+
 	fprintf(f, "%d\n", port);
 	fclose(f);
 }
@@ -47,6 +81,16 @@ int GPIO::read(int port)
 	char file[128];
 	sprintf(file, "/sys/class/gpio/gpio%d/value", port);
 	f = fopen(file, "r");
+	if (f<=0)	{
+				usleep(100000);
+				f = fopen(file, "r");
+				if (f<=0){
+					perror("GPIO read access denided");
+					exit(1);
+				}
+
+	}
+
 
 	int i;
 	fscanf(f, "%d", &i);
@@ -60,6 +104,17 @@ void GPIO::write(int port, int value){
 	char file[128];
 	sprintf(file, "/sys/class/gpio/gpio%d/value", port);
 	f = fopen(file, "w");
+	if (f<=0)	{
+					usleep(100000);
+					f = fopen(file, "w");
+					if (f<=0){
+						perror("GPIO write access denided");
+						exit(1);
+					}
+
+	}
+
+
 	
 	if (value == 0)	fprintf(f, "0\n");
 	else		fprintf(f, "1\n");

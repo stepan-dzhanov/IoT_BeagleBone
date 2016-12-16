@@ -14,6 +14,29 @@
 
 #include <cstdio>
 
+#include <stddef.h>
+#include <cstdlib>
+#include <cstdio>
+#include <iostream>
+#include <time.h>
+#include <ctime>
+#include <string>
+
+
+#include <stdint.h>
+#include <stdio.h>
+#include <time.h>
+#include <string.h>
+#include <sys/time.h>
+#include <stdint.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
+#include <cstdlib>
+#include <cstdio>
+#include <cstdlib>
+#include <iostream>
+
 class GPIO {
 public:
 

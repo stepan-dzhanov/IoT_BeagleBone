@@ -81,6 +81,7 @@ void ThingSpeakClient::PutDataToChannel(char data, char channel)	{
 }
 
 ThingSpeakClient::~ThingSpeakClient() {
+	close(sock);
 	// TODO Auto-generated destructor stub
 }
 
