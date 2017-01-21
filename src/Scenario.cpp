@@ -28,7 +28,7 @@ Scenario::Scenario() {
               sprintf(str,"----Start scenario----");
 
               Sendmail("unell@ukr.net", "djanov@gmail.com", "StepanSmartHouseNotification", "Reboot system");
-              Sendmail("natalidvoreckaya@mail.ru", "djanov@gmail.com", "От умного дома", "Я начал работать. Буду информировть тебя о событиях");
+              //Sendmail("natalidvoreckaya@mail.ru", "djanov@gmail.com", "От умного дома", "Я начал работать. Буду информировть тебя о событиях");
               AddEventToLog(str);
      step =0;
 
@@ -90,6 +90,20 @@ void Scenario::StartCoockingMV(char addr, char *coocking_params) {
 
 }
 
+void Scenario::WaterCommand(char ch, char time){
+	message_buf_t  rbuf;
+	rbuf.mtype = MESSAGE_TYPE_COMMAND_1;
+	sprintf((char *)rbuf.mtext, "%cwdl%d", ch, time);
+	buf_length = sizeof(message_buf_t) - sizeof(long);
+	if (msgsnd(msqid, &rbuf, buf_length, 0) < 0) {
+		perror("Scenario_msgsnd");
+
+	}
+	char *str = "Direct water delivery";
+	AddEventToLog(str);
+
+}
+
 
 
 
@@ -110,12 +124,12 @@ void Scenario::WaterDelivery()	{
     sprintf(str,"Water delivery");
 
 
-	if ((hum = GetHumidity())<0)	{
-		std::cout<<"Scenario_ NO internet connection"<<"\n";
-	}
-	else {
-		if ((hum<19)&&(w_flg ==0)){
-			if (hum<0) return;
+	//if ((hum = GetHumidity())<0)	{
+		//std::cout<<"Scenario_ NO internet connection"<<"\n";
+	//}
+	//else {
+	//	if ((hum<19)&&(w_flg ==0)){
+			//if (hum<0) return;
 			if ((m_time.tm_mday - last_day_water)<4) return;
 			last_day_water = m_time.tm_mday;
 			w_flg=1;
@@ -129,7 +143,7 @@ void Scenario::WaterDelivery()	{
 			std::cout<<"WDL MESSAGE is sent"<<"\n";
 
 			Sendmail("unell@ukr.net", "djanov@gmail.com", "StepanSmartHouseNotification", "Water delivery done");
-			Sendmail("natalidvoreckaya@mail.ru", "djanov@gmail.com", "От умного дома", "Я полил цветок");
+			//Sendmail("natalidvoreckaya@mail.ru", "djanov@gmail.com", "От умного дома", "Я полил цветок");
 			AddEventToLog(str);
 			memset(str,0,strlen(str));
 			sprintf(str,"Humidity=");
@@ -138,8 +152,8 @@ void Scenario::WaterDelivery()	{
 			AddEventToLog(str);
 
 
-		}
-		if (hum>42) {
+		//}
+		/*if (hum>42) {
 			if (hum>99) return;
 			//memset(str,0,strlen(str));
 		   // sprintf(str,"w_flag reset");
@@ -154,8 +168,8 @@ void Scenario::WaterDelivery()	{
 
 
 			w_flg =0;
-		}
-	}
+		}*/
+	//}
 }
 
 void Scenario::UpdateCoockingSchedule(char *str){
@@ -310,7 +324,7 @@ void Scenario::AddEventToLog(char *event )	{
 }
 int Scenario::Sendmail(const char *to, const char *from, const char *subject,  char *message)
 {
-	 return 0;
+
     int retval = -1;
     FILE *mailpipe = popen("/usr/lib/sendmail -t", "w");
     if (mailpipe != NULL) {
@@ -331,6 +345,7 @@ int Scenario::Sendmail(const char *to, const char *from, const char *subject,  c
 void Scenario::EventProcessing (char *event)	{
 	 char str_bat[] = "bat";
 	 char str_dor[] = "dor";
+	 char str_door[] = "doo";
 	 char message [32];
 	 sprintf (message,"Low battery in sensor ");
 	 message[22] |=event[3];
@@ -341,13 +356,21 @@ void Scenario::EventProcessing (char *event)	{
 		Sendmail("unell@ukr.net", "djanov@gmail.com", "StepanSmartHouseNotification", message);
 	}
 	if ( !memcmp(&event[5],&str_dor,3) )	{
-			Sendmail("unell@ukr.net", "djanov@gmail.com", "StepanSmartHouseNotification", "Door sensor");
+			//Sendmail("unell@ukr.net", "djanov@gmail.com", "StepanSmartHouseNotification", "Door sensor");
 			thingspeak_data = new ThingSpeakClient ;
 		    thingspeak_data->PutDataToChannel(50,'1');
 		    delete (thingspeak_data);
 		    sprintf(message,"Door sensor");
 		    AddEventToLog(message);
 	}
+	if ( !memcmp(&event[5],&str_door,3) )	{
+				Sendmail("unell@ukr.net", "djanov@gmail.com", "StepanSmartHouseNotification", "Deposit sensor");
+				thingspeak_data = new ThingSpeakClient ;
+			    thingspeak_data->PutDataToChannel(50,'1');
+			    delete (thingspeak_data);
+			    sprintf(message,"Deposit sensor");
+			    AddEventToLog(message);
+		}
 
 
 }

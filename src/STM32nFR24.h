@@ -182,6 +182,7 @@ private:
 		bool UpdateSensorInfo(uint8_t _addr, uint8_t _bat);
 		void ClearSensorList();
 		void AddSensorToLog(char _id, char _bat);
+		int str_counter;
 
 
 

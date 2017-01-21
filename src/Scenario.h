@@ -56,6 +56,7 @@ public:
 	void TestOK(char addr);
 	void CH1ON(char addr);
 	void StartCoockingMV(char addr, char *coocking_params);
+	void WaterCommand(char ch, char time);
 	int msqid;
 	key_t key;
     int buf_length;

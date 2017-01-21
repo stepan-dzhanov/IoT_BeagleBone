@@ -63,6 +63,8 @@ int UDPReciver::GetMessage() {
         if( !memcmp(&in_message,&message,8) ) return UDP_MESSAGE_GET_TEMP_VALUE;
         sprintf(message,"scp");
         if( !memcmp(&in_message,&message,3) ) return UDP_MESSAGE_START_COOCKING;
+        sprintf(message,"wdl");
+        if( !memcmp(&in_message,&message,3) ) return UDP_MESSAGE_WDL_DIRECT;
         return 0;
         return 0;
 

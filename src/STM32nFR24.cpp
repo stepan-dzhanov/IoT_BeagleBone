@@ -547,7 +547,7 @@ STM32_nFR24::STM32_nFR24(uint8_t _cepin, uint8_t _cspin)	{
 	  csn_pin=_cspin;
 
 	  spi = new SPI();
-
+	  str_counter=0;
 
 	  __start_timer();
 	  // Initialize pins
@@ -733,7 +733,15 @@ void STM32_nFR24::AddSensorToLog(char _id, char _bat )	{
      s_time = time (NULL);
      localtime_r (&s_time, &m_time);
 
-
+     str_counter++;
+          if (str_counter>120){
+         	 str_counter=0;
+         	 close(fid);
+         	 fid = open("sensor_log.txt", O_RDWR | O_CREAT );
+         	     if (fid<0){
+         	 	   	 perror("nRF905_fopen");
+         	 }
+          }
      sprintf(buff,"Sensor-");
      write(fid, buff, strlen(buff));
      sprintf(buff,"%d",_id);

@@ -97,13 +97,14 @@ int main(int argc, char** argv)
     message_buf_t  rbuf;
     key = QUEUES;
     char mode=0;
-    sleep(10);
     signal(SIGPIPE, SIG_IGN);
     unsigned char temp=0;
     char statusMV=0;
     char statusHT=0;
     char data[32];
     static char flg=0;
+
+    sleep(180);
 
     Scenario *scenario = new  Scenario();
 
@@ -214,6 +215,10 @@ int main(int argc, char** argv)
 			udpReciver->SentMessage(data);
 
 
+		}
+		if (udp_message==UDP_MESSAGE_WDL_DIRECT)	{
+			scenario->WaterCommand(0x01,20);
+			cout<<"START_WDL_DIRECT\n";
 		}
 
 		scenario->Coocking(mode);
