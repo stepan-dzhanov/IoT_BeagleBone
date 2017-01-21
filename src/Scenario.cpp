@@ -113,6 +113,8 @@ void Scenario::WaterDelivery()	{
 	message_buf_t  rbuf;
 
 	static int last_day_water = 0;
+	static int last_mon_water=0;
+
     long int s_time;
     struct tm m_time;
     s_time = time (NULL);
@@ -130,8 +132,15 @@ void Scenario::WaterDelivery()	{
 	//else {
 	//	if ((hum<19)&&(w_flg ==0)){
 			//if (hum<0) return;
-			if ((m_time.tm_mday - last_day_water)<4) return;
+
+            if (abs (m_time.tm_mday-last_day_water)<4) return;
+            if (m_time.tm_mon>last_mon_water){
+            	if ((31-last_day_water+m_time.tm_mday)<4) return;
+            }
+
+
 			last_day_water = m_time.tm_mday;
+			last_mon_water= m_time.tm_mon;
 			w_flg=1;
 			rbuf.mtype = MESSAGE_TYPE_COMMAND_1;
 			sprintf((char *)rbuf.mtext, "1wdl20");
